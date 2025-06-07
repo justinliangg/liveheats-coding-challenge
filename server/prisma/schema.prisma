@@ -8,6 +8,13 @@ datasource db {
 }
 
 model Example {
-  id   String    @id @default(uuid())
+  id   String @id @default(uuid())
   name String
+}
+
+model Student {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  @@map("student")
 }
