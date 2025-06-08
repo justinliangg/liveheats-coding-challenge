@@ -13,8 +13,35 @@ model Example {
 }
 
 model Student {
-  id   String @id @default(uuid()) @db.Uuid
-  name String
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String
+  raceParticipants RaceParticipant[]
 
   @@map("student")
+}
+
+model Race {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String
+  isCompleted      Boolean           @default(false) @map("is_completed")
+  raceParticipants RaceParticipant[]
+
+  @@map("race")
+}
+
+model RaceParticipant {
+  id String @id @default(uuid()) @db.Uuid
+
+  raceId String @map("race_id") @db.Uuid
+  race   Race   @relation(fields: [raceId], references: [id])
+
+  studentId String  @map("student_id") @db.Uuid
+  student   Student @relation(fields: [studentId], references: [id])
+
+  lane     Int
+  position Int?
+
+  @@unique([raceId, studentId])
+  @@unique([raceId, lane])
+  @@map("race_participant")
 }
