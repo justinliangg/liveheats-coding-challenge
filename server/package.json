@@ -20,7 +20,7 @@
         "test:watch": "jest --watch",
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-        "test:unit": "jest --config ./test/jestUnit.json --verbose",
+        "test:unit": "jest --config ./test/unit/jestUnit.json --verbose",
         "test:integration": "jest --config ./test/integration/jestIntegration.json --runInBand --detectOpenHandles --verbose",
         "seed:s3": "npx ts-node -r tsconfig-paths/register seeder/seedS3.ts",
         "seed:db": "npx ts-node -r tsconfig-paths/register seeder/seedDb.ts"
