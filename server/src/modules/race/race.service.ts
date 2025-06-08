@@ -1,9 +1,13 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException
+} from "@nestjs/common";
+import { Prisma, PrismaPromise } from "@prisma/client";
 import { PrismaService } from "@src/prisma.service";
 import { RaceDTO } from "./dto/race.dto";
 import { CreateRaceDTO } from "./dto/create-race.dto";
-import { validate } from "class-validator";
+import { UpdateRaceResultDTO } from "./dto/update-race-result.dto";
 
 type RaceWithParticipants = Prisma.RaceGetPayload<{
     include: {
@@ -60,6 +64,104 @@ export class RaceService {
         });
 
         return this.toDTO(createdRace);
+    }
+
+    async updateResults(
+        raceId: string,
+        data: UpdateRaceResultDTO
+    ): Promise<void> {
+        const raceResults = data.results;
+
+        const race = await this.prismaService.race.findUnique({
+            where: { id: raceId },
+            include: {
+                raceParticipants: {
+                    include: {
+                        student: true
+                    }
+                }
+            }
+        });
+        if (!race) {
+            throw new NotFoundException(`Race with ID ${raceId} not found.`);
+        }
+
+        // Check participant ids are valid
+        const studentIds = Array.from(
+            new Set(raceResults.map((result) => result.studentId))
+        );
+        const existingParticipants = race.raceParticipants.map(
+            (p) => p.student.id
+        );
+
+        if (studentIds.length !== existingParticipants.length) {
+            throw new BadRequestException(
+                "The number of results does not match the number of participants for the race"
+            );
+        }
+
+        const invalidParticipants = studentIds.filter(
+            (id) => !existingParticipants.includes(id)
+        );
+        if (invalidParticipants.length > 0) {
+            throw new BadRequestException(
+                `Invalid participant IDs: ${invalidParticipants.join(", ")}`
+            );
+        }
+
+        // Validating race positions
+        const racePositions = raceResults.map((result) => result.position);
+        this.validateRacePositions(racePositions);
+
+        // Update race results
+        const transactions: PrismaPromise<unknown>[] = raceResults.map(
+            (result) =>
+                this.prismaService.raceParticipant.updateMany({
+                    where: {
+                        raceId,
+                        studentId: result.studentId
+                    },
+                    data: {
+                        position: result.position
+                    }
+                })
+        );
+        transactions.push(
+            this.prismaService.race.update({
+                where: { id: raceId },
+                data: { isCompleted: true }
+            })
+        );
+        await this.prismaService.$transaction(transactions);
+    }
+
+    /**
+     * Validates the sequence of the race positions provided.
+     * @param positions
+     * @throws {BadRequestException} if the positions are not in a valid sequence
+     */
+    private validateRacePositions(positions: number[]): void {
+        // Getting the count of each position
+        const positionCountMap = new Map<number, number>();
+        for (const pos of positions) {
+            positionCountMap.set(pos, (positionCountMap.get(pos) || 0) + 1);
+        }
+
+        // Sort the unique positions in ascending order
+        const sortedPositions = Array.from(positionCountMap.keys()).sort(
+            (a, b) => a - b
+        );
+
+        // Check for gaps based on tie rules
+        let expectedPosition = 1;
+        for (const position of sortedPositions) {
+            if (position !== expectedPosition) {
+                throw new BadRequestException(
+                    `Invalid sequence: expected position ${expectedPosition}, but got ${position}.`
+                );
+            }
+            expectedPosition += positionCountMap.get(position)!;
+        }
     }
 
     /**

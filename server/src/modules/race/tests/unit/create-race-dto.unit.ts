@@ -63,7 +63,6 @@ describe("CreateRaceDTO", () => {
         const errors = await validate(raceDTO);
 
         // Assert
-        console.log(errors);
         expect(errors.length).toBe(1);
     });
 
