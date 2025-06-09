@@ -20,6 +20,11 @@ export class RaceController {
         return this.raceService.getMany();
     }
 
+    @Get("/:raceId")
+    async getRace(@Param("raceId", ParseUUIDPipe) raceId: string) {
+        return this.raceService.getById(raceId);
+    }
+
     @Post("/")
     async createRace(@Body() createRaceDto: CreateRaceDTO) {
         await this.raceService.create(createRaceDto);

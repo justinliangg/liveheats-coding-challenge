@@ -23,6 +23,29 @@ type RaceWithParticipants = Prisma.RaceGetPayload<{
 export class RaceService {
     constructor(private readonly prismaService: PrismaService) {}
 
+    async getById(raceId: string): Promise<RaceDTO> {
+        const race = await this.prismaService.race.findUnique({
+            where: {
+                id: raceId
+            },
+            include: {
+                raceParticipants: {
+                    include: {
+                        student: true
+                    }
+                }
+            }
+        });
+
+        if (!race) {
+            throw new NotFoundException(
+                "Unable to find a race with provided ID."
+            );
+        }
+
+        return this.toDTO(race);
+    }
+
     async getMany(): Promise<RaceDTO[]> {
         const races = await this.prismaService.race.findMany({
             include: {
