@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { RaceResultForm } from "@/components/race/RaceResultForm";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageError } from "@/components/shared/PageError";
+import { CompletedRaceDetail } from "@/components/race/CompletedRaceDetail";
 
 export default function RaceDetailPage() {
   const router = useRouter();
@@ -42,8 +43,7 @@ export default function RaceDetailPage() {
           </Badge>
         </CardHeader>
         <CardContent>
-          {/** TODO: Render completed race view */}
-          <RaceResultForm race={race} />
+          {race.isCompleted ? <CompletedRaceDetail race={race} /> : <RaceResultForm race={race} />}
         </CardContent>
       </Card>
     </Page>
