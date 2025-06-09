@@ -17,22 +17,20 @@ export const StudentDropdown: React.FC<StudentDropdownProps> = ({ value, onValue
   };
 
   return (
-    <>
-      <Select value={value} onValueChange={handleValueChange}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select a student" />
-        </SelectTrigger>
-        <SelectContent>
-          {students
-            .filter((student) => !excludeValues || !excludeValues.includes(student.id))
-            .map((student) => (
-              <SelectItem key={student.id} value={student.id}>
-                {student.name}
-              </SelectItem>
-            ))}
-          <QuickCreateStudentForm />
-        </SelectContent>
-      </Select>
-    </>
+    <Select value={value} onValueChange={handleValueChange}>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select a student" />
+      </SelectTrigger>
+      <SelectContent>
+        {students
+          .filter((student) => !excludeValues || !excludeValues.includes(student.id))
+          .map((student) => (
+            <SelectItem key={student.id} value={student.id}>
+              {student.name}
+            </SelectItem>
+          ))}
+        <QuickCreateStudentForm />
+      </SelectContent>
+    </Select>
   );
 };
