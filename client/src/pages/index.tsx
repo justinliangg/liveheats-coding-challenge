@@ -1,5 +1,6 @@
 import { RaceList } from "@/components/race/RaceList";
 import { Page } from "@/components/shared/Page";
+import { StudentDropdown } from "@/components/student/StudentDropdown";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 
@@ -28,6 +29,8 @@ export default function Home() {
             router.push(`/races/${raceId}`);
           }}
         />
+
+        <StudentDropdown value={""} />
       </div>
     </Page>
   );
